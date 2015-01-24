@@ -23,7 +23,8 @@
 					data: $("#connect-form").serialize(),
 					success: function(data)
 						{
-							$("#status-box").html("Connected")
+							var response = jQuery.parseJSON(data);
+							$("#status-box").html("Connected: " + response.success + " Message: " + response.message + " raw: " + data)
 						},
 					//dataType: dataType
 				});

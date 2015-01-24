@@ -29,6 +29,10 @@ type chatHandler struct {
 type loginHandler struct {
 }
 
+type connectHandler struct {
+	sessionList *SessionList
+}
+
 type ThemeData struct {
 	Messages map[string]Message
 }
@@ -65,6 +69,11 @@ func (c *loginHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Hello LOGIN"))
 }
 
+func (c *connectHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	log.Println(r.Form)
+}
+
 func newChatHandler(s *SessionList) *chatHandler {
 	c := &chatHandler{s}
 	return c
@@ -72,6 +81,11 @@ func newChatHandler(s *SessionList) *chatHandler {
 
 func newLoginHandler() *loginHandler {
 	c := &loginHandler{}
+	return c
+}
+
+func newConnectHandler(s *SessionList) *connectHandler {
+	c := &connectHandler{s}
 	return c
 }
 
@@ -106,7 +120,9 @@ func main() {
 	mux := http.NewServeMux()
 	mux.Handle("/chat", newChatHandler(sessionList))
 	mux.Handle("/login", newLoginHandler())
+	mux.Handle("/connect", newConnectHandler(sessionList))
 
 	log.Println("Listening...")
+
 	http.ListenAndServe(":"+strconv.Itoa(8081), mux)
 }

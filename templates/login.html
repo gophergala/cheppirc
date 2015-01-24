@@ -3,13 +3,32 @@
 		<title>Login to a chat server</title>
 	</head>
 	<body>
-		<form>
+		<p id="status-box">&nbsp;</p>
+		<form id="connect-form">
 			Nick: <input id="nick" name="nick" label="nick"><br/>
 			Channel: <input id="channel" name="channel" label="channel"><br/>
 			<p>Server and network</p>
 			Server: <input id="server" name="server" label="server"><br/>
 			Port: <input id="port" name="port" label="port"><br/>
-			SSL: <input type="checkbox" label="SSL"><br/>
+			SSL: <input id="ssl" type="checkbox" label="SSL"><br/>
+			<input id="connect" type="button" value="Connect">
 		</form>
+		<script type="text/javascript" src="https://code.jquery.com/jquery-2.1.3.min.js"></script>
+		<script type="text/javascript">
+			$("#connect").click(function() {
+				$("#status-box").html("Connecting...")
+				$.ajax({
+					type: "POST",
+					url: "/connect",
+					data: $("#connect-form").serialize(),
+					success: function(data)
+						{
+							$("#status-box").html("Connected")
+						},
+					//dataType: dataType
+				});
+			});
+		</script>
 	</body>
 </html>
+

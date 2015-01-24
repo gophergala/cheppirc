@@ -112,7 +112,7 @@ func newSession(nick, channel, server, port string) (*Session, error) {
 	c := irc.Client(cfg)
 
 	c.HandleFunc("connected",
-        func(conn *irc.Conn, line *irc.Line) { conn.Join("channel") })
+        func(conn *irc.Conn, line *irc.Line) { conn.Join(channel) })
 
 	if err := c.Connect(); err != nil {
         return nil, errors.New("Connection error: " + err.Error())

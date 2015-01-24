@@ -4,6 +4,7 @@ import (
 	"log"
 	"fmt"
 	irc "github.com/fluffle/goirc/client"
+	"html/template"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -57,6 +58,9 @@ func (c *chatHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func (c *loginHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	accessMsg := fmt.Sprintf("%v %v from %v Headers: %+v", r.Method, r.RequestURI, r.RemoteAddr, r.Header)
 	log.Println(accessMsg)
+
+	t := template.Must(template.ParseFiles("templates/login.html"))
+	t.Execute(w, "CHEPPIRC")
 
 	w.Write([]byte("Hello LOGIN"))
 }

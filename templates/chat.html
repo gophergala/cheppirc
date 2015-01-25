@@ -86,11 +86,16 @@
     .channel-tab:hover,
     .channel-tab.active {
       border-top: 2px solid #FF9800;
-      padding-top: 8px;
+      padding-top: 7px;
     }
 
     .message {
       margin: 1em 2em;
+    }
+
+    .message.status {
+      color: #727272;
+      font-style: italic;
     }
 
     .message .sender {
@@ -99,6 +104,10 @@
       color: #FF9800;
       text-align: right;
       margin: 0 15px;
+    }
+
+    .message.self .sender {
+      color: #3F51B5;
     }
 
     .message .text {
@@ -171,7 +180,7 @@
     {{range $targets := .Targets}}
     <div class="channel-box {{.Name}}-channel">
       {{range $message := .Messages}}
-      <div class="message">
+      <div class="message {{.Mtype}}">
         <div class="sender">
           {{if .Sender}}
           {{.Sender}}
@@ -199,7 +208,7 @@
 </aside>
 
 <footer>
-  <div class="name inline">NAME</div>
+  <div class="name inline">{{.Nick}}</div>
   <input id= "message-input" type="text" name="text" class="text inline"
          placeholder="Type message here..."/>
 </footer>
@@ -235,7 +244,7 @@
       console.log("Replace target:", target);
 
       $(".channel-boxes ." + target + "-channel")
-          .append("<div class=\"message\"><div class=\"sender\">" + message.Sender.replace("<", "&lt;").replace(">", "&gt;") + "</div><div class=\"text\">" + message.Text.replace("<", "&lt;").replace(">", "&gt;") + "</div></div>");
+          .append("<div class=\"message " + message.Mtype + "\"><div class=\"sender\">" + message.Sender.replace("<", "&lt;").replace(">", "&gt;") + "</div><div class=\"text\">" + message.Text.replace("<", "&lt;").replace(">", "&gt;") + "</div></div>");
     };
 
     var sendsocket = new WebSocket(wsurl("/sendws?session=" + $("#session").attr("data-id")));

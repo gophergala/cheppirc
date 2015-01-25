@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
 	"errors"
 	"github.com/gophergala/cheppirc/theme"
 	"github.com/gorilla/websocket"
@@ -40,9 +41,13 @@ type wsHandler struct {
 	sessionList *SessionList
 }
 
+type sendHandler struct {
+	sessionList *SessionList
+}
+
 var upgrader = websocket.Upgrader{
-    ReadBufferSize:  1024,
-    WriteBufferSize: 1024,
+	ReadBufferSize:  1024,
+	WriteBufferSize: 1024,
 }
 
 func (c *chatHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -115,6 +120,33 @@ func (wh *wsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (s *sendHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+
+	session := getSession(r.Form, s.sessionList)
+	if session == nil {
+		log.Println("NO SESSION IN WS CONNECTION")
+		return
+	}
+
+	conn, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Println("ERROR IN CONNECTION:", err.Error())
+		return
+	}
+
+	for {
+		messageType, p, err := conn.ReadMessage()
+		if err != nil {
+			log.Println("ERROR READING SOCKET:", err.Error())
+			return
+		}
+		log.Println("DEBUG READ:", messageType, " -- ", string(p))
+		data := strings.Split(string(p), "||")
+		session.C.Privmsg(data[0], data[1])
+	}
+}
+
 func newChatHandler(s *SessionList) *chatHandler {
 	c := &chatHandler{s}
 	return c
@@ -132,6 +164,11 @@ func newConnectHandler(s *SessionList) *connectHandler {
 
 func newWsHandler(s *SessionList) *wsHandler {
 	w := &wsHandler{s}
+	return w
+}
+
+func newSendHandler(s *SessionList) *sendHandler {
+	w := &sendHandler{s}
 	return w
 }
 
@@ -200,6 +237,7 @@ func main() {
 	sessionList.Sessions = make(map[string]Session)
 
 	mux := http.NewServeMux()
+	mux.Handle("/sendws", newSendHandler(sessionList))
 	mux.Handle("/ws", newWsHandler(sessionList))
 	mux.Handle("/chat", newChatHandler(sessionList))
 	mux.Handle("/login", newLoginHandler())

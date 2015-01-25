@@ -11,7 +11,6 @@ import (
 	"strconv"
 	"sync"
 	"errors"
-	"github.com/gophergala/cheppirc/message"
 	"github.com/gophergala/cheppirc/theme"
 )
 
@@ -110,8 +109,7 @@ func newSession(nick, channel, server, port string) (*Session, error) {
 	log.Println(c.String())
 	id, _ := uuid.NewV4()
 	session := &Session{id.String(), c, nil}
-	session.Data = &theme.ThemeData{}
-	session.Data.Messages = make(map[string][]message.Message)
+	session.Data = theme.NewThemeData()
 	log.Println("UUID:", id.String())
 
 	c.HandleFunc("connected",

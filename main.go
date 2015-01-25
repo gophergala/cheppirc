@@ -63,8 +63,6 @@ func (c *loginHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	t := template.Must(template.ParseFiles("templates/login.html"))
 	t.Execute(w, "CHEPPIRC")
-
-	w.Write([]byte("Hello LOGIN"))
 }
 
 func (c *connectHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {

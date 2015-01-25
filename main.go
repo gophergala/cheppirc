@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"errors"
 	"github.com/gophergala/cheppirc/theme"
+	"github.com/gorilla/websocket"
 )
 
 type SessionList struct {
@@ -21,6 +22,7 @@ type Session struct {
 	Uuid string
 	C *irc.Conn
 	Data *theme.ThemeData
+	Updater chan []byte
 }
 
 type chatHandler struct {
@@ -34,7 +36,14 @@ type connectHandler struct {
 	sessionList *SessionList
 }
 
+type wsHandler struct {
+	sessionList *SessionList
+}
 
+var upgrader = websocket.Upgrader{
+    ReadBufferSize:  1024,
+    WriteBufferSize: 1024,
+}
 
 func (c *chatHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	accessMsg := fmt.Sprintf("%v %v from %v Headers: %+v", r.Method, r.RequestURI, r.RemoteAddr, r.Header)
@@ -83,6 +92,29 @@ func (c *connectHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("{\"success\": true, \"message\": \"" + session.Uuid + "\"}"))
 }
 
+func (wh *wsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+
+	session := getSession(r.Form, wh.sessionList)
+	if session == nil {
+		log.Println("NO SESSION IN WS CONNECTION")
+		return
+	}
+
+	conn, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Println("ERROR IN CONNECTION:", err.Error())
+		return
+	}
+	for {
+		chatMessage := <-session.Updater
+		err := conn.WriteMessage(websocket.TextMessage, chatMessage)
+		if err != nil {
+			log.Println("ERROR WRITING TO SOCKET:", err.Error())
+		}
+	}
+}
+
 func newChatHandler(s *SessionList) *chatHandler {
 	c := &chatHandler{s}
 	return c
@@ -98,6 +130,11 @@ func newConnectHandler(s *SessionList) *connectHandler {
 	return c
 }
 
+func newWsHandler(s *SessionList) *wsHandler {
+	w := &wsHandler{s}
+	return w
+}
+
 func newSession(nick, channel, server, port string) (*Session, error) {
 	cfg := irc.NewConfig(nick)
 	cfg.SSL = false
@@ -107,8 +144,10 @@ func newSession(nick, channel, server, port string) (*Session, error) {
 
 	log.Println(c.String())
 	id, _ := uuid.NewV4()
-	session := &Session{id.String(), c, nil}
+	u := make(chan []byte)
+	session := &Session{id.String(), c, nil, u}
 	session.Data = theme.NewThemeData()
+	session.Data.Uuid = session.Uuid
 	log.Println("\nUUID:", id.String())
 	log.Println("\nCFG:", cfg)
 
@@ -116,14 +155,14 @@ func newSession(nick, channel, server, port string) (*Session, error) {
 		func(conn *irc.Conn, line *irc.Line) { 
 			log.Println("Connected to", line.Raw)
 			conn.Join(channel)
-			session.Data.AddMessage(channel, "", "Now talking on " + channel)
+			session.Data.AddMessage(channel, "", "Now talking on " + channel, session.Updater)
 			conn.Who(channel)
 		})
 
 	c.HandleFunc("privmsg",
 		func(conn *irc.Conn, line *irc.Line) { 
 			log.Println("PRIVMSG - Raw:", line.Raw, "Nick:", line.Nick, "Src:", line.Src, "Args:", line.Args, "time:", line.Time)
-			session.Data.AddMessage(line.Args[0], line.Nick, line.Args[1])
+			session.Data.AddMessage(line.Args[0], line.Nick, line.Args[1], session.Updater)
 		})
 
 	c.HandleFunc("352",
@@ -159,6 +198,7 @@ func main() {
 	sessionList.Sessions = make(map[string]Session)
 
 	mux := http.NewServeMux()
+	mux.Handle("/ws", newWsHandler(sessionList))
 	mux.Handle("/chat", newChatHandler(sessionList))
 	mux.Handle("/login", newLoginHandler())
 	mux.Handle("/connect", newConnectHandler(sessionList))

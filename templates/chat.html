@@ -56,6 +56,7 @@
       color: #FF9800;
     }
   </style>
+  <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.3.min.js"></script>
 </head>
 <body>
 
@@ -63,6 +64,7 @@
 </header>
 
 <content>
+  <span id="session" data-id="{{.Uuid}}"/>
   <div class="content-top">
     <div class="logo">
       <span class="chepp">Chepp</span><span class="irc">IRC</span>
@@ -101,6 +103,12 @@
   </div>
   {{end}}
 </aside>
+  <script type="text/javascript">
+    var serversocket = new WebSocket("ws://localhost:8081/ws?session=" + $("#session").attr("data-id"));
+    serversocket.onmessage = function(e) {
+                console.log(e.data);
+        };
+  </script>
 
 </body>
 </html>

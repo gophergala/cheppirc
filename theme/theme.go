@@ -1,6 +1,7 @@
 package theme
 
 import (
+	"encoding/json"
 	"github.com/gophergala/cheppirc/message"
 	"github.com/gophergala/cheppirc/user"
 	"log"
@@ -10,10 +11,11 @@ import (
 type ThemeData struct {
 	Messages map[string][]message.Message
 	Users map[string]map[string]user.User
+	Uuid string
 	sync.RWMutex
 }
 
-func (d *ThemeData) AddMessage(target, sender, text string) {
+func (d *ThemeData) AddMessage(target, sender, text string, updater chan []byte) {
 	log.Println("ADDMESSAGE:", text, "DEBUG USERS:", d.Users)
 	d.Lock()
 	m := message.Message{sender, text}
@@ -23,6 +25,11 @@ func (d *ThemeData) AddMessage(target, sender, text string) {
 	}
 	d.Messages[target] = append(d.Messages[target], m)
 	d.Unlock()
+	b, err := json.Marshal(m)
+	if err != nil {
+		log.Println("Error marshalling message:", err.Error())
+	}
+	updater <- b
 }
 
 func (d *ThemeData) SetUsers(target, nick, info string) {

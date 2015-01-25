@@ -144,12 +144,13 @@ func newSession(nick, channel, server, port string) (*Session, error) {
 
 	log.Println(c.String())
 	id, _ := uuid.NewV4()
-	u := make(chan []byte)
+	u := make(chan []byte, 25)
 	session := &Session{id.String(), c, nil, u}
 	session.Data = theme.NewThemeData()
 	session.Data.Uuid = session.Uuid
 	log.Println("\nUUID:", id.String())
 	log.Println("\nCFG:", cfg)
+	session.Data.AddMessage(channel, "", "Connecting to " + channel, session.Updater)
 
 	c.HandleFunc("connected",
 		func(conn *irc.Conn, line *irc.Line) { 

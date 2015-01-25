@@ -35,12 +35,14 @@ func (d *ThemeData) AddMessage(target, sender, text string, updater chan []byte)
 	tempT := d.Targets[target]
 	m := message.Message{sender, text, tempT.Name}
 	tempT.AddMessage(m)
+	d.Targets[target] = tempT
 	d.Unlock()
 
 	b, err := json.Marshal(m)
 	if err != nil {
 		log.Println("Error marshalling message:", err.Error())
 	}
+	log.Println(d.Targets)
 	updater <- b
 }
 

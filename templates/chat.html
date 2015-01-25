@@ -213,26 +213,26 @@
   $('.user-box:first').addClass('active');
 </script>
 <script type="text/javascript">
-  var serversocket = new WebSocket("ws://localhost:8081/ws?session=" + $("#session").attr("data-id"));
-  serversocket.onmessage = function (e) {
-    console.log(e.data);
-  };
-</script>
-<script type="text/javascript">
   $(function(){
+    console.log("loaded")
     function wsurl(s) {
       var l = window.location;
       return ((l.protocol === "https:") ? "wss://" : "ws://") + l.hostname + (((l.port != 80) && (l.port != 443)) ? ":" + l.port : "") + s;
     }
 
-    var serversocket = new WebSocket(wsurl("/ws?session=" + $("#session").attr("data-id")));
+    var url = wsurl("/ws?session=" + $("#session").attr("data-id"))
+    var serversocket = new WebSocket(url);
+    console.log("add onmessage:", url)
     serversocket.onmessage = function (e) {
+      console.log("onmessage trigger")
       var message = jQuery.parseJSON(e.data);
       var target = message.Target;
       if (target.charAt(0) != "#") {
         console.log("Not a channel: " + target);
-        return;
+        //return;
       }
+
+      console.log("Replace target:", target)
 
       $(".channel-boxes ." + target + "-channel")
           .append("<div class=\"message\"><div class=\"sender\">" + message.Sender + "</div><div class=\"text\">" + message.Text + "</div></div>");

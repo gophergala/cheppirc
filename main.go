@@ -144,6 +144,7 @@ func (s *sendHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		log.Println("DEBUG READ:", messageType, " -- ", string(p))
 		data := strings.Split(string(p), "||")
 		session.C.Privmsg(data[0], data[1])
+		session.Data.AddMessage(data[0], session.Data.Nick, data[1], session.Updater)
 	}
 }
 

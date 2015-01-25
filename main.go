@@ -36,10 +36,11 @@ type connectHandler struct {
 }
 
 type ThemeData struct {
-	Messages map[string]Message
+	Messages map[string][]Message
 }
 
 type Message struct {
+	Sender string
 	Text string
 }
 
@@ -111,18 +112,39 @@ func newSession(nick, channel, server, port string) (*Session, error) {
 	cfg.NewNick = func(n string) string { return n + "^" }
 	c := irc.Client(cfg)
 
+	log.Println(c.String())
+	id, _ := uuid.NewV4()
+	session := &Session{id.String(), c, nil}
+	session.Data = &ThemeData{}
+	session.Data.Messages = make(map[string][]Message)
+	log.Println("UUID:", id.String())
+
 	c.HandleFunc("connected",
-        func(conn *irc.Conn, line *irc.Line) { conn.Join(channel) })
+		func(conn *irc.Conn, line *irc.Line) { 
+			conn.Join(channel)
+			session.Data.Messages[channel] = []Message{}
+			m := Message{"", "Now talking on " + channel}
+			session.Data.Messages[channel] = append(session.Data.Messages[channel], m)
+
+		})
+
+	c.HandleFunc("privmsg",
+		func(conn *irc.Conn, line *irc.Line) { 
+			log.Println("Raw:", line.Raw, "Nick:", line.Nick, "Src:", line.Src, "Args:", line.Args, "time:", line.Time) 
+			m := Message{line.Nick, line.Args[1]}
+			if _, ok := session.Data.Messages[line.Args[0]]; !ok {
+				log.Println("Target not found. Args:", line.Args)
+				session.Data.Messages[line.Args[0]] = []Message{}
+			}
+			session.Data.Messages[line.Args[0]] = append(session.Data.Messages[line.Args[0]], m)
+		})
+
 
 	if err := c.Connect(); err != nil {
-        return nil, errors.New("Connection error: " + err.Error())
-    }
+		return nil, errors.New("Connection error: " + err.Error())
+	}
 
-    log.Println(c.String())
-    id, _ := uuid.NewV4()
-    session := &Session{id.String(), c, nil}
-    log.Println("UUID:", id.String())
-    return session, nil
+	return session, nil
 }
 
 func getSession(values url.Values, sessionList *SessionList) *Session {
@@ -141,8 +163,9 @@ func getSession(values url.Values, sessionList *SessionList) *Session {
 func displayChat(s *Session) []byte {
 	var output string
 	output = "uuid:" + s.Uuid + "\n **** \n"
-	for m := range s.Data.Messages {
-		output = output + "\n---\n" + m
+	log.Println("Messages:", s.Data.Messages)
+	for key, m := range s.Data.Messages {
+		output = output + "\n---\n" + "key: " + key + " m0=" + m[0].Text
 	}
 
 	return []byte(output)

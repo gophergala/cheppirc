@@ -8,11 +8,17 @@
       padding: 0;
       margin: 0;
     }
+    .inline {
+      display:inline-block;
+      margin: 0;
+      padding: 0;
+    }
     content {
       width: 80%;
       float: left;
       background-color: #FFFFFF;
     }
+
     .content-top {
       width: 100%;
       min-height: 50px;
@@ -29,6 +35,7 @@
       background-color: #303F9F;
       text-align: center;
       vertical-align: middle;
+      color: #FFFFFF;
     }
     .logo {
       float: left;
@@ -52,8 +59,31 @@
       background-color: #303F9F;
     }
     .sender {
-      min-width: 100px;
+      display: inline-block;
+      width: 15%;
       color: #FF9800;
+    }
+    .message .text {
+      display: inline-block;
+      width: 84%;
+    }
+    footer {
+      width: 100%;
+      position: absolute;
+      bottom: 0;
+    }
+    footer .name {
+      width: 15%;
+      min-height: 36px;
+      background-color: #303F9F;
+      color: #FFFFFF;
+      text-align: center;
+    }
+    footer input {
+      width: 85%;
+      min-height: 36px;
+      border: none;
+      border-top: 1px solid #B6B6B6;
     }
   </style>
   <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.3.min.js"></script>
@@ -83,9 +113,9 @@
       {{range $messages}}
       <div class="message">
         {{if .Sender}}
-        <span class="sender">{{.Sender}}</span>
+        <div class="sender">{{.Sender}}</div>
         {{end}}
-        <span class="text">{{.Text}}</span>
+        <div class="text">{{.Text}}</div>
       </div>
       {{end}}
     </div>
@@ -95,13 +125,15 @@
 
 <aside>
   <div class="side-top">Users</div>
-  {{range $target, $users := .Users}}
-  <div class="user-box {{$target}}-channel">
-    {{range $users}}
-    <div class="user">{{.nick}}</div>
+  <div class="user-box">
+    {{range $target, $users := .Users}}
+    <div class="{{$target}}-channel">
+      {{range $users}}
+      <div class="user">{{.nick}}</div>
+      {{end}}
+    </div>
     {{end}}
   </div>
-  {{end}}
 </aside>
   <script type="text/javascript">
     function wsurl(s) {
@@ -114,6 +146,11 @@
                 console.log(e.data);
         };
   </script>
+
+<footer>
+  <div class="name inline">NAME</div>
+  <input type="text" name="text" class="text inline" placeholder="Type message here..." />
+</footer>
 
 </body>
 </html>

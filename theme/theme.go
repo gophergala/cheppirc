@@ -18,7 +18,7 @@ type ThemeData struct {
 func (d *ThemeData) AddMessage(target, sender, text string, updater chan []byte) {
 	log.Println("ADDMESSAGE:", text, "DEBUG USERS:", d.Users)
 	d.Lock()
-	m := message.Message{sender, text}
+	m := message.Message{sender, text, target}
 	if _, ok := d.Messages[target]; !ok {
 		log.Println("ADDMESSAGE: Target not found. Target:", target)
 		d.Messages[target] = []message.Message{}

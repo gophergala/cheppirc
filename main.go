@@ -9,13 +9,11 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
-	"sync"
 	"errors"
 	"github.com/gophergala/cheppirc/theme"
 )
 
 type SessionList struct {
-	sync.RWMutex
 	Sessions map[string]Session
 }
 
@@ -51,7 +49,9 @@ func (c *chatHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	t := template.Must(template.ParseFiles("templates/chat.html"))
+	session.Data.RLock()
 	t.Execute(w, session.Data)
+	session.Data.RUnlock()
 
 	//w.Write([]byte("Hello IRC"))
 	//w.Write(data)

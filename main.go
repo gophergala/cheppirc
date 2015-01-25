@@ -119,6 +119,7 @@ func newSession(nick, channel, server, port string) (*Session, error) {
 			log.Println("Connected to", line.Raw)
 			conn.Join(channel)
 			session.Data.AddMessage(channel, "", "Now talking on " + channel)
+			conn.Who(channel)
 		})
 
 	c.HandleFunc("privmsg",

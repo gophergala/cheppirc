@@ -128,6 +128,9 @@
       border: none;
     }
   </style>
+  <script type="text/javascript"
+        src="https://code.jquery.com/jquery-2.1.3.min.js">
+</script>
 </head>
 <body>
 
@@ -205,16 +208,6 @@
   <input type="text" name="text" class="text inline"
          placeholder="Type message here..."/>
 </footer>
-
-<script type="text/javascript"
-        src="https://code.jquery.com/jquery-2.1.3.min.js">
-</script>
-<script type="text/javascript">
-  var serversocket = new WebSocket("ws://localhost:8081/ws?session=" + $("#session").attr("data-id"));
-  serversocket.onmessage = function (e) {
-    console.log(e.data);
-  };
-</script>
 
 </body>
 </html>

@@ -40,6 +40,7 @@
     .side-top {
       width: 100%;
       height: 50px;
+      line-height: 50px;
       background-color: #303F9F;
       text-align: center;
       vertical-align: middle;
@@ -47,7 +48,6 @@
     }
 
     .logo {
-      float: left;
       width: auto;
       margin: 15px;
     }
@@ -57,7 +57,6 @@
     }
 
     .channel-tabs {
-      float: left;
       width: auto;
     }
 
@@ -69,6 +68,11 @@
     }
 
     .channel-box {
+      display: none;
+    }
+
+    .channel-box.active {
+      display: block;
     }
 
     .channel-tab {
@@ -76,6 +80,13 @@
       padding: 10px;
       margin: 0 5px;
       background-color: #303F9F;
+      vertical-align: top;
+    }
+
+    .channel-tab:hover,
+    .channel-tab.active {
+      border-top: 2px solid #FF9800;
+      padding-top: 8px;
     }
 
     .message {
@@ -99,6 +110,11 @@
       height: 100%;
       border-left: 1px solid #B6B6B6;
       overflow: scroll;
+      display: none;
+    }
+
+    .user-box.active {
+      display: block;
     }
 
     .user-box .user {
@@ -116,6 +132,7 @@
     footer .name {
       width: 15%;
       height: 36px;
+      line-height: 36px;
       background-color: #303F9F;
       color: #FFFFFF;
       text-align: center;
@@ -126,11 +143,9 @@
       width: 84%;
       height: 36px;
       border: none;
+      padding: 0 0 0 5px;
     }
   </style>
-  <script type="text/javascript"
-        src="https://code.jquery.com/jquery-2.1.3.min.js">
-</script>
 </head>
 <body>
 
@@ -141,11 +156,11 @@
   <span id="session" data-id="{{.Uuid}}"></span>
 
   <div class="content-top">
-    <div class="logo">
+    <div class="logo inline">
       <span class="chepp">Chepp</span><span class="irc">IRC</span>
     </div>
 
-    <div class="channel-tabs">
+    <div class="channel-tabs inline">
       {{range $target, $messages := .Messages}}
       <div class="channel-tab {{$target}}-channel"> {{$target}}</div>
       {{end}}
@@ -182,6 +197,27 @@
     {{end}}
   </div>
 </aside>
+
+<footer>
+  <div class="name inline">NAME</div>
+  <input type="text" name="text" class="text inline"
+         placeholder="Type message here..."/>
+</footer>
+
+<script type="text/javascript"
+        src="https://code.jquery.com/jquery-2.1.3.min.js">
+</script>
+<script type="text/javascript">
+  $('.channel-tab:first').addClass('active');
+  $('.channel-box:first').addClass('active');
+  $('.user-box:first').addClass('active');
+</script>
+<script type="text/javascript">
+  var serversocket = new WebSocket("ws://localhost:8081/ws?session=" + $("#session").attr("data-id"));
+  serversocket.onmessage = function (e) {
+    console.log(e.data);
+  };
+</script>
 <script type="text/javascript">
   function wsurl(s) {
     var l = window.location;
@@ -202,12 +238,6 @@
         .append("<div class=\"message\"><div class=\"sender\">" + message.Sender + "</div><div class=\"text\">" + message.Text + "</div></div>");
   };
 </script>
-
-<footer>
-  <div class="name inline">NAME</div>
-  <input type="text" name="text" class="text inline"
-         placeholder="Type message here..."/>
-</footer>
 
 </body>
 </html>

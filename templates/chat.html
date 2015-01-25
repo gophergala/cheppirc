@@ -161,16 +161,17 @@
     </div>
 
     <div class="channel-tabs inline">
-      {{range $target, $messages := .Messages}}
+      {{range $target, $infos := .Targets}}
       <div class="channel-tab {{$target}}-channel"> {{$target}}</div>
       {{end}}
     </div>
   </div>
 
   <div class="channel-boxes">
-    {{range $target, $messages := .Messages}}
-    <div class="channel-box {{$target}}-channel">
-      {{range $messages}}
+    {{range $targets := .Targets}}
+    {{$targets}}
+    <div class="channel-box {{.Name}}-channel">
+      {{range $message := .Messages}}
       <div class="message">
         <div class="sender">
           {{if .Sender}}

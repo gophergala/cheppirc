@@ -39,10 +39,12 @@ type connectHandler struct {
 
 type wsHandler struct {
 	sessionList *SessionList
+	WsClose chan bool
 }
 
 type sendHandler struct {
 	sessionList *SessionList
+	WsClose chan bool
 }
 
 var upgrader = websocket.Upgrader{
@@ -98,6 +100,7 @@ func (c *connectHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (wh *wsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	log.Println("\n *** Handle WS *** \n")
 	r.ParseForm()
 
 	session := getSession(r.Form, wh.sessionList)
@@ -112,15 +115,28 @@ func (wh *wsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	for {
-		chatMessage := <-session.Updater
-		err := conn.WriteMessage(websocket.TextMessage, chatMessage)
-		if err != nil {
-			log.Println("ERROR WRITING TO SOCKET:", err.Error())
+		log.Println("Waiting...")
+		select {
+		case chatMessage := <-session.Updater:
+			//escapedMessage := template.HTMLEscapeString(string(chatMessage))
+			//err := conn.WriteMessage(websocket.TextMessage, []byte(escapedMessage))
+			log.Println("\nWRITEMESSAGE:", string(chatMessage))
+			err := conn.WriteMessage(websocket.TextMessage, chatMessage)
+			if err != nil {
+				log.Println("ERROR WRITING TO SOCKET:", err.Error())
+				return
+			} else {
+				log.Println("\n *** SUCCESS *** \n")
+			}
+		case <-wh.WsClose:
+			return
 		}
+
 	}
 }
 
 func (s *sendHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	log.Println("\n **** sendHandler ServeHTTP *** \n")
 	r.ParseForm()
 
 	session := getSession(r.Form, s.sessionList)
@@ -136,9 +152,11 @@ func (s *sendHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for {
+		log.Println("\n--READ--\n")
 		messageType, p, err := conn.ReadMessage()
 		if err != nil {
-			log.Println("ERROR READING SOCKET:", err.Error())
+			log.Println("SENDHANDLER ERROR READING SOCKET:", err.Error())
+			s.WsClose <- true
 			return
 		}
 		log.Println("DEBUG READ:", messageType, " -- ", string(p))
@@ -163,13 +181,13 @@ func newConnectHandler(s *SessionList) *connectHandler {
 	return c
 }
 
-func newWsHandler(s *SessionList) *wsHandler {
-	w := &wsHandler{s}
+func newWsHandler(s *SessionList, wsClose chan bool) *wsHandler {
+	w := &wsHandler{s, wsClose}
 	return w
 }
 
-func newSendHandler(s *SessionList) *sendHandler {
-	w := &sendHandler{s}
+func newSendHandler(s *SessionList, wsClose chan bool) *sendHandler {
+	w := &sendHandler{s, wsClose}
 	return w
 }
 
@@ -237,9 +255,11 @@ func main() {
 	sessionList := new(SessionList)
 	sessionList.Sessions = make(map[string]Session)
 
+	closeWs := make(chan bool)
+
 	mux := http.NewServeMux()
-	mux.Handle("/sendws", newSendHandler(sessionList))
-	mux.Handle("/ws", newWsHandler(sessionList))
+	mux.Handle("/sendws", newSendHandler(sessionList, closeWs))
+	mux.Handle("/ws", newWsHandler(sessionList, closeWs))
 	mux.Handle("/chat", newChatHandler(sessionList))
 	mux.Handle("/login", newLoginHandler())
 	mux.Handle("/connect", newConnectHandler(sessionList))

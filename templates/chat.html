@@ -1,7 +1,106 @@
-{{range $target, $messages := .Messages}}
-	<strong>Target:</strong>strong> {{$target}}
-	{{range $messages}}
-		<strong>Sender:</strong> {{.Sender}}<br/>
-		<strong>Text:</strong> {{.Text}}<br/>
-	{{end}}
-{{end}}
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>CheppIRC</title>
+  <style>
+    body {
+      padding: 0;
+      margin: 0;
+    }
+    content {
+      width: 80%;
+      float: left;
+      background-color: #FFFFFF;
+    }
+    .content-top {
+      width: 100%;
+      min-height: 50px;
+      background-color: #3F51B5;
+      color: #FFFFFF;
+    }
+    aside {
+      width: 20%;
+      float: left;
+    }
+    .side-top {
+      width: 100%;
+      height: 50px;
+      background-color: #303F9F;
+      text-align: center;
+      vertical-align: middle;
+    }
+    .logo {
+      float: left;
+      width: auto;
+      margin: 15px;
+    }
+    .chepp {
+      font-style: italic;
+    }
+    .channel-tabs {
+      float: left;
+      width: auto;
+    }
+    .channel-boxes {
+      clear: both;
+    }
+    .channel-tab {
+      display: inline-block;
+      padding: 10px;
+      margin: 0 5px;
+      background-color: #303F9F;
+    }
+    .sender {
+      min-width: 100px;
+      color: #FF9800;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+</header>
+
+<content>
+  <div class="content-top">
+    <div class="logo">
+      <span class="chepp">Chepp</span><span class="irc">IRC</span>
+    </div>
+
+    <div class="channel-tabs">
+      {{range $target, $messages := .Messages}}
+      <div class="channel-tab {{$target}}-channel"> {{$target}}</div>
+      {{end}}
+    </div>
+  </div>
+
+  <div class="channel-boxes">
+    {{range $target, $messages := .Messages}}
+    <div class="channel-box {{$target}}-channel">
+      {{range $messages}}
+      <div class="message">
+        {{if .Sender}}
+        <span class="sender">{{.Sender}}</span>
+        {{end}}
+        <span class="text">{{.Text}}</span>
+      </div>
+      {{end}}
+    </div>
+    {{end}}
+  </div>
+</content>
+
+<aside>
+  <div class="side-top">Users</div>
+  {{range $target, $users := .Users}}
+  <div class="user-box {{$target}}-channel">
+    {{range $users}}
+    <div class="user">{{.nick}}</div>
+    {{end}}
+  </div>
+  {{end}}
+</aside>
+
+</body>
+</html>

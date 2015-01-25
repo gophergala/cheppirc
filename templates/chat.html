@@ -4,16 +4,21 @@
   <meta charset="UTF-8">
   <title>CheppIRC</title>
   <style>
+    html,
     body {
+      height: 100%;
       padding: 0;
       margin: 0;
     }
+
     .inline {
-      display:inline-block;
+      display: inline-block;
       margin: 0;
       padding: 0;
     }
+
     content {
+      height: 100%;
       width: 80%;
       float: left;
       background-color: #FFFFFF;
@@ -25,10 +30,13 @@
       background-color: #3F51B5;
       color: #FFFFFF;
     }
+
     aside {
       width: 20%;
       float: left;
+      height: 87%;
     }
+
     .side-top {
       width: 100%;
       height: 50px;
@@ -37,56 +45,89 @@
       vertical-align: middle;
       color: #FFFFFF;
     }
+
     .logo {
       float: left;
       width: auto;
       margin: 15px;
     }
+
     .chepp {
       font-style: italic;
     }
+
     .channel-tabs {
       float: left;
       width: auto;
     }
+
     .channel-boxes {
       clear: both;
+      height: 86%;
+      width: 100%;
+      overflow: scroll;
     }
+
+    .channel-box {
+    }
+
     .channel-tab {
       display: inline-block;
       padding: 10px;
       margin: 0 5px;
       background-color: #303F9F;
     }
-    .sender {
+
+    .message {
+      margin: 1em 2em;
+    }
+
+    .message .sender {
       display: inline-block;
       width: 15%;
       color: #FF9800;
+      text-align: right;
+      margin: 0 15px;
     }
+
     .message .text {
       display: inline-block;
-      width: 84%;
+      width: 79%;
     }
+
+    .user-box {
+      height: 100%;
+      border-left: 1px solid #B6B6B6;
+      overflow: scroll;
+    }
+
+    .user-box .user {
+      padding: 10px;
+    }
+
     footer {
       width: 100%;
       position: absolute;
       bottom: 0;
+      height: 36px;
+      border-top: 1px solid #B6B6B6;
     }
+
     footer .name {
       width: 15%;
-      min-height: 36px;
+      height: 36px;
       background-color: #303F9F;
       color: #FFFFFF;
       text-align: center;
+      vertical-align: middle;
     }
+
     footer input {
-      width: 85%;
-      min-height: 36px;
+      width: 84%;
+      height: 36px;
       border: none;
-      border-top: 1px solid #B6B6B6;
     }
   </style>
-  <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.3.min.js"></script>
 </head>
 <body>
 
@@ -94,7 +135,8 @@
 </header>
 
 <content>
-  <span id="session" data-id="{{.Uuid}}"/>
+  <span id="session" data-id="{{.Uuid}}"></span>
+
   <div class="content-top">
     <div class="logo">
       <span class="chepp">Chepp</span><span class="irc">IRC</span>
@@ -112,9 +154,11 @@
     <div class="channel-box {{$target}}-channel">
       {{range $messages}}
       <div class="message">
-        {{if .Sender}}
-        <div class="sender">{{.Sender}}</div>
-        {{end}}
+        <div class="sender">
+          {{if .Sender}}
+          {{.Sender}}
+          {{end}}
+        </div>
         <div class="text">{{.Text}}</div>
       </div>
       {{end}}
@@ -128,38 +172,49 @@
   <div class="user-box">
     {{range $target, $users := .Users}}
     <div class="{{$target}}-channel">
-      {{range $users}}
-      <div class="user">{{.nick}}</div>
+      {{range $nick, $info := $users}}
+      <div class="user">{{$nick}}</div>
       {{end}}
     </div>
     {{end}}
   </div>
 </aside>
-  <script type="text/javascript">
-    function wsurl(s) {
-      var l = window.location;
-      return ((l.protocol === "https:") ? "wss://" : "ws://") + l.hostname + (((l.port != 80) && (l.port != 443)) ? ":" + l.port : "") + s;
-      }
-    console.log("url=", wsurl("ws/?session=test"));
-    var serversocket = new WebSocket(wsurl("/ws?session=" + $("#session").attr("data-id")));
-    serversocket.onmessage = function(e) {
-                console.log(e.data);
-                var message = jQuery.parseJSON(e.data);
-                var target = message.Target;
-                if (target.charAt(0) != "#") {
-                  console.log("Not a channel: " + target);
-                  return;
-                }
-                target = target.substring(1); //Strip the # from the channel name
-                $(".channel-boxes ." + target + "-channel")
-                  .append("<div class=\"message\"><div class=\"sender\">" + message.Sender + "</div><div class=\"text\">" + message.Text + "</div></div>");
-        };
-  </script>
+<script type="text/javascript">
+  function wsurl(s) {
+    var l = window.location;
+    return ((l.protocol === "https:") ? "wss://" : "ws://") + l.hostname + (((l.port != 80) && (l.port != 443)) ? ":" + l.port : "") + s;
+  }
+  console.log("url=", wsurl("ws/?session=test"));
+  var serversocket = new WebSocket(wsurl("/ws?session=" + $("#session").attr("data-id")));
+  serversocket.onmessage = function (e) {
+    console.log(e.data);
+    var message = jQuery.parseJSON(e.data);
+    var target = message.Target;
+    if (target.charAt(0) != "#") {
+      console.log("Not a channel: " + target);
+      return;
+    }
+    target = target.substring(1); //Strip the # from the channel name
+    $(".channel-boxes ." + target + "-channel")
+        .append("<div class=\"message\"><div class=\"sender\">" + message.Sender + "</div><div class=\"text\">" + message.Text + "</div></div>");
+  };
+</script>
 
 <footer>
   <div class="name inline">NAME</div>
-  <input type="text" name="text" class="text inline" placeholder="Type message here..." />
+  <input type="text" name="text" class="text inline"
+         placeholder="Type message here..."/>
 </footer>
+
+<script type="text/javascript"
+        src="https://code.jquery.com/jquery-2.1.3.min.js">
+</script>
+<script type="text/javascript">
+  var serversocket = new WebSocket("ws://localhost:8081/ws?session=" + $("#session").attr("data-id"));
+  serversocket.onmessage = function (e) {
+    console.log(e.data);
+  };
+</script>
 
 </body>
 </html>

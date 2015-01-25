@@ -50,10 +50,11 @@ func (c *chatHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := displayChat(session)
+	t := template.Must(template.ParseFiles("templates/chat.html"))
+	t.Execute(w, session.Data)
 
 	//w.Write([]byte("Hello IRC"))
-	w.Write(data)
+	//w.Write(data)
 }
 
 func (c *loginHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -143,17 +144,6 @@ func getSession(values url.Values, sessionList *SessionList) *Session {
 	}
 
 	return nil
-}
-
-func displayChat(s *Session) []byte {
-	var output string
-	output = "uuid:" + s.Uuid + "\n **** \n"
-	log.Println("Messages:", s.Data.Messages)
-	for key, m := range s.Data.Messages {
-		output = output + "\n---\n" + "key: " + key + " m0=" + m[0].Text
-	}
-
-	return []byte(output)
 }
 
 func main() {

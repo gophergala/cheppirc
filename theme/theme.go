@@ -12,7 +12,7 @@ type ThemeData struct {
 }
 
 func (d *ThemeData) AddMessage(target, sender, text string) {
-	m := message.Message{sender, target}
+	m := message.Message{sender, text}
 	if _, ok := d.Messages[target]; !ok {
 		log.Println("Target not found. Args:", target)
 		d.Messages[target] = []message.Message{}

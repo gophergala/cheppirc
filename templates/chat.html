@@ -1,0 +1,7 @@
+{{range $target, $messages := .Messages}}
+	<strong>Target:</strong>strong> {{$target}}
+	{{range $messages}}
+		<strong>Sender:</strong> {{.Sender}}<br/>
+		<strong>Text:</strong> {{.Text}}<br/>
+	{{end}}
+{{end}}

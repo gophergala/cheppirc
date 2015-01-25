@@ -229,6 +229,12 @@ func newSession(nick, channel, server, port string) (*Session, error) {
 			session.Data.SetUsers(line.Args[1], line.Args[5], line.Args[3] + " " + line.Args[4])
 		})
 
+	c.HandleFunc("315",
+		func(conn *irc.Conn, line *irc.Line) {
+			log.Println("315 - RAW:", line.Raw)
+			session.Data.AddMessage(line.Args[0], "", "reload", "hidden", session.Updater)
+		})
+
 
 	if err := c.Connect(); err != nil {
 		return nil, errors.New("Connection error: " + err.Error())

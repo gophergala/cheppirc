@@ -232,10 +232,10 @@
         //return;
       }
 
-      console.log("Replace target:", target)
+      console.log("Replace target:", target);
 
       $(".channel-boxes ." + target + "-channel")
-          .append("<div class=\"message\"><div class=\"sender\">" + message.Sender + "</div><div class=\"text\">" + message.Text + "</div></div>");
+          .append("<div class=\"message\"><div class=\"sender\">" + message.Sender.replace("<", "&lt;").replace(">", "&gt;") + "</div><div class=\"text\">" + message.Text.replace("<", "&lt;").replace(">", "&gt;") + "</div></div>");
     };
 
     var sendsocket = new WebSocket(wsurl("/sendws?session=" + $("#session").attr("data-id")));

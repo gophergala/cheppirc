@@ -24,7 +24,7 @@ type Target struct {
 	Messages []message.Message
 }
 
-func (d *ThemeData) AddMessage(target, sender, text string, updater chan []byte) {
+func (d *ThemeData) AddMessage(target, sender, text string, mtype string, updater chan []byte) {
 	log.Println("ADDMESSAGE:", text, "DEBUG USERS:", d.Users)
 
 	d.Lock()
@@ -34,7 +34,7 @@ func (d *ThemeData) AddMessage(target, sender, text string, updater chan []byte)
 	}
 
 	tempT := d.Targets[target]
-	m := message.Message{sender, text, tempT.Name}
+	m := message.Message{sender, text, tempT.Name, mtype}
 	tempT.AddMessage(m)
 	d.Targets[target] = tempT
 	d.Unlock()

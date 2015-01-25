@@ -144,7 +144,7 @@ func (s *sendHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		log.Println("DEBUG READ:", messageType, " -- ", string(p))
 		data := strings.Split(string(p), "||")
 		session.C.Privmsg(data[0], data[1])
-		session.Data.AddMessage(data[0], session.Data.Nick, data[1], session.Updater)
+		session.Data.AddMessage(data[0], session.Data.Nick, data[1], "self", session.Updater)
 	}
 }
 
@@ -189,20 +189,20 @@ func newSession(nick, channel, server, port string) (*Session, error) {
 	session.Data.Nick = nick
 	log.Println("\nUUID:", id.String())
 	log.Println("\nCFG:", cfg)
-	session.Data.AddMessage(channel, "", "Connecting to " + channel, session.Updater)
+	session.Data.AddMessage(channel, "", "Connecting to " + channel, "status", session.Updater)
 
 	c.HandleFunc("connected",
 		func(conn *irc.Conn, line *irc.Line) { 
 			log.Println("Connected to", line.Raw)
 			conn.Join(channel)
-			session.Data.AddMessage(channel, "", "Now talking on " + channel, session.Updater)
+			session.Data.AddMessage(channel, "", "Now talking on " + channel, "status", session.Updater)
 			conn.Who(channel)
 		})
 
 	c.HandleFunc("privmsg",
 		func(conn *irc.Conn, line *irc.Line) { 
 			log.Println("PRIVMSG - Raw:", line.Raw, "Nick:", line.Nick, "Src:", line.Src, "Args:", line.Args, "time:", line.Time)
-			session.Data.AddMessage(line.Args[0], line.Nick, line.Args[1], session.Updater)
+			session.Data.AddMessage(line.Args[0], line.Nick, line.Args[1], "user", session.Updater)
 		})
 
 	c.HandleFunc("352",

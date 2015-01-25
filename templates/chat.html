@@ -245,6 +245,7 @@
       if (e.which === 13) {
         console.log("SEND:", $(".channel-tab.active").attr("data-channel") + "||" + $(this).val());
         sendsocket.send($(".channel-tab.active").attr("data-channel") + "||" + $(this).val());
+        $(this).val("");
       }
     });
   });

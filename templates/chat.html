@@ -140,10 +140,19 @@
       var l = window.location;
       return ((l.protocol === "https:") ? "wss://" : "ws://") + l.hostname + (((l.port != 80) && (l.port != 443)) ? ":" + l.port : "") + s;
       }
-    console.log("url=", wsurl("ws/?session=test"))
+    console.log("url=", wsurl("ws/?session=test"));
     var serversocket = new WebSocket(wsurl("/ws?session=" + $("#session").attr("data-id")));
     serversocket.onmessage = function(e) {
                 console.log(e.data);
+                var message = jQuery.parseJSON(e.data);
+                var target = message.Target;
+                if (target.charAt(0) != "#") {
+                  console.log("Not a channel: " + target);
+                  return;
+                }
+                target = target.substring(1); //Strip the # from the channel name
+                $(".channel-boxes ." + target + "-channel")
+                  .append("<div class=\"message\"><div class=\"sender\">" + message.Sender + "</div><div class=\"text\">" + message.Text + "</div></div>");
         };
   </script>
 

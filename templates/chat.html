@@ -93,6 +93,11 @@
       margin: 1em 2em;
     }
 
+    .message.status {
+      color: #727272;
+      font-style: italic;
+    }
+
     .message .sender {
       display: inline-block;
       width: 15%;
@@ -239,7 +244,7 @@
       console.log("Replace target:", target);
 
       $(".channel-boxes ." + target + "-channel")
-          .append("<div class=\"message\"><div class=\"sender\">" + message.Sender.replace("<", "&lt;").replace(">", "&gt;") + "</div><div class=\"text\">" + message.Text.replace("<", "&lt;").replace(">", "&gt;") + "</div></div>");
+          .append("<div class=\"message " + message.Mtype + "\"><div class=\"sender\">" + message.Sender.replace("<", "&lt;").replace(">", "&gt;") + "</div><div class=\"text\">" + message.Text.replace("<", "&lt;").replace(">", "&gt;") + "</div></div>");
     };
 
     var sendsocket = new WebSocket(wsurl("/sendws?session=" + $("#session").attr("data-id")));

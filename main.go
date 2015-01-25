@@ -11,6 +11,8 @@ import (
 	"strconv"
 	"sync"
 	"errors"
+	"github.com/gophergala/cheppirc/message"
+	"github.com/gophergala/cheppirc/theme"
 )
 
 type SessionList struct {
@@ -21,7 +23,7 @@ type SessionList struct {
 type Session struct {
 	Uuid string
 	C *irc.Conn
-	Data *ThemeData
+	Data *theme.ThemeData
 }
 
 type chatHandler struct {
@@ -35,14 +37,7 @@ type connectHandler struct {
 	sessionList *SessionList
 }
 
-type ThemeData struct {
-	Messages map[string][]Message
-}
 
-type Message struct {
-	Sender string
-	Text string
-}
 
 func (c *chatHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	accessMsg := fmt.Sprintf("%v %v from %v Headers: %+v", r.Method, r.RequestURI, r.RemoteAddr, r.Header)
@@ -115,28 +110,20 @@ func newSession(nick, channel, server, port string) (*Session, error) {
 	log.Println(c.String())
 	id, _ := uuid.NewV4()
 	session := &Session{id.String(), c, nil}
-	session.Data = &ThemeData{}
-	session.Data.Messages = make(map[string][]Message)
+	session.Data = &theme.ThemeData{}
+	session.Data.Messages = make(map[string][]message.Message)
 	log.Println("UUID:", id.String())
 
 	c.HandleFunc("connected",
 		func(conn *irc.Conn, line *irc.Line) { 
 			conn.Join(channel)
-			session.Data.Messages[channel] = []Message{}
-			m := Message{"", "Now talking on " + channel}
-			session.Data.Messages[channel] = append(session.Data.Messages[channel], m)
-
+			session.Data.AddMessage(channel, "", "Now talking on " + channel)
 		})
 
 	c.HandleFunc("privmsg",
 		func(conn *irc.Conn, line *irc.Line) { 
 			log.Println("Raw:", line.Raw, "Nick:", line.Nick, "Src:", line.Src, "Args:", line.Args, "time:", line.Time) 
-			m := Message{line.Nick, line.Args[1]}
-			if _, ok := session.Data.Messages[line.Args[0]]; !ok {
-				log.Println("Target not found. Args:", line.Args)
-				session.Data.Messages[line.Args[0]] = []Message{}
-			}
-			session.Data.Messages[line.Args[0]] = append(session.Data.Messages[line.Args[0]], m)
+			session.Data.AddMessage(line.Args[0], line.Nick, line.Args[1])
 		})
 
 

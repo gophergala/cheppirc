@@ -14,6 +14,7 @@ type ThemeData struct {
 	Targets map[string]Target
 	Users map[string]map[string]user.User
 	Uuid string
+	Nick string
 	sync.RWMutex
 }
 

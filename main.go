@@ -148,6 +148,7 @@ func newSession(nick, channel, server, port string) (*Session, error) {
 	session := &Session{id.String(), c, nil, u}
 	session.Data = theme.NewThemeData()
 	session.Data.Uuid = session.Uuid
+	session.Data.Nick = nick
 	log.Println("\nUUID:", id.String())
 	log.Println("\nCFG:", cfg)
 	session.Data.AddMessage(channel, "", "Connecting to " + channel, session.Updater)

@@ -232,7 +232,7 @@ func newSession(nick, channel, server, port string) (*Session, error) {
 	c.HandleFunc("315",
 		func(conn *irc.Conn, line *irc.Line) {
 			log.Println("315 - RAW:", line.Raw)
-			session.Data.AddMessage(line.Args[0], "", "reload", "hidden", session.Updater)
+			session.Data.AddMessage(line.Args[1], "", "reload", "hidden", session.Updater)
 		})
 
 

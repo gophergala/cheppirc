@@ -209,8 +209,13 @@
 
 <footer>
   <div class="name inline">{{.Nick}}</div>
+  {{if .Users}}
+  <input id= "message-input" type="text" name="text" class="text inline"
+         placeholder="Type text here..."/>
+  {{else}}
   <input id= "message-input" type="text" name="text" class="text inline"
          placeholder="Connecting..." disabled="disabled"/>
+  {{end}}
 </footer>
 
 <script type="text/javascript"
@@ -244,7 +249,7 @@
       console.log("Replace target:", target);
       // Temporary solution to load users.
       // TODO: make it work with websockets.
-      if (message.Mtype === 'hidden' && message.text === 'reload') {
+      if (message.Mtype === 'hidden' && message.Text === 'reload') {
         location.reload();
       }
       else {

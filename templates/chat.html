@@ -210,7 +210,7 @@
 <footer>
   <div class="name inline">{{.Nick}}</div>
   <input id= "message-input" type="text" name="text" class="text inline"
-         placeholder="Type message here..."/>
+         placeholder="Connecting..." disabled="disabled"/>
 </footer>
 
 <script type="text/javascript"
@@ -242,9 +242,15 @@
       }
 
       console.log("Replace target:", target);
-
-      $(".channel-boxes ." + target + "-channel")
-          .append("<div class=\"message " + message.Mtype + "\"><div class=\"sender\">" + message.Sender.replace("<", "&lt;").replace(">", "&gt;") + "</div><div class=\"text\">" + message.Text.replace("<", "&lt;").replace(">", "&gt;") + "</div></div>");
+      // Temporary solution to load users.
+      // TODO: make it work with websockets.
+      if (message.Mtype === 'hidden' && message.text === 'reload') {
+        location.reload();
+      }
+      else {
+        $(".channel-boxes ." + target + "-channel")
+            .append("<div class=\"message " + message.Mtype + "\"><div class=\"sender\">" + message.Sender.replace("<", "&lt;").replace(">", "&gt;") + "</div><div class=\"text\">" + message.Text.replace("<", "&lt;").replace(">", "&gt;") + "</div></div>");
+      }
     };
 
     var sendsocket = new WebSocket(wsurl("/sendws?session=" + $("#session").attr("data-id")));

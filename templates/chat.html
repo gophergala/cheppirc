@@ -180,6 +180,7 @@
     {{range $targets := .Targets}}
     <div class="channel-box {{.Name}}-channel">
       {{range $message := .Messages}}
+      {{if ne .Mtype "hidden"}}
       <div class="message {{.Mtype}}">
         <div class="sender">
           {{if .Sender}}
@@ -188,6 +189,7 @@
         </div>
         <div class="text">{{.Text}}</div>
       </div>
+      {{end}}
       {{end}}
     </div>
     {{end}}
